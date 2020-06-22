@@ -1,6 +1,6 @@
-./.gradle
-./build
 .gradle
+build
+/build
 /.idea/caches
 /.idea/libraries
 /.idea/modules.xml
