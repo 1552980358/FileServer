@@ -42,17 +42,6 @@ class Authorization: HttpServlet() {
         private const val RESPONSE_LOGIN_SUCCESS_TOKEN = "token"
         private const val RESPONSE_AUTHORIZATION_SUCCESS = "authorized"
         
-        /**
-         * File path
-         * Directory and files will be created with script,
-         * edit and modify the script before starting up the service
-         **/
-        /** Linux **/
-        private const val LINUX_FILE_CONFIG = "/root/.fileServer/config"
-        private const val LINUX_FILE_SHA256 = "/root/.fileServer/sha256"
-        /** Windows **/
-        private const val WIN_FILE_CONFIG = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\config"
-        private const val WIN_FILE_SHA256 = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\sha256"
     }
     
     /**
@@ -94,7 +83,6 @@ class Authorization: HttpServlet() {
         val pw = req.getParameter(LOGIN_PW)
         
         if (ac == null || pw == null) {
-            
             tryCatch {
                 resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_ID_PW_NOT_SPECIFIED) }.toString())
             }
