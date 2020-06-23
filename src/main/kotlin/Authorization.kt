@@ -36,7 +36,7 @@ class Authorization: HttpServlet() {
         private const val RESPONSE_UNKNOWN_TOKEN = "unknown_token"
         private const val RESPONSE_ID_PW_NOT_SPECIFIED = "id_pw_not_specified"
         private const val RESPONSE_TOKEN_NOT_SPECIFIED = "token_not_specified"
-    
+        
         /** Success **/
         private const val RESPONSE_LOGIN_SUCCESS = "login_success"
         private const val RESPONSE_LOGIN_SUCCESS_TOKEN = "token"
@@ -63,12 +63,12 @@ class Authorization: HttpServlet() {
     override fun doPost(req: HttpServletRequest?, resp: HttpServletResponse?) {
         req ?: return
         resp ?: return
-    
+        
         resp.contentType = "application/json"
         when (req.getParameter(REQUEST_TYPE)) {
             REQUEST_TYPE_AUTHORIZE -> authorize(req, resp)
             REQUEST_TYPE_LOGIN -> login(req, resp)
-            else -> tryCatch { unknown(resp) }
+            else -> responseSingle(resp)
         }
         
     }
@@ -83,16 +83,16 @@ class Authorization: HttpServlet() {
         val pw = req.getParameter(LOGIN_PW)
         
         if (ac == null || pw == null) {
-            tryCatch {
-                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_ID_PW_NOT_SPECIFIED) }.toString())
-            }
+            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_ID_PW_NOT_SPECIFIED) }.toString())
+            responseSingle(resp, RESPONSE_ID_PW_NOT_SPECIFIED)
             return
         }
         
         val dir = File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
         dir.apply {
             if (!exists()) {
-                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
+                // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
+                responseSingle(resp, RESPONSE_INTERNAL_ERROR)
                 return
             }
             readLines().apply {
@@ -131,39 +131,49 @@ class Authorization: HttpServlet() {
     private fun authorize(req: HttpServletRequest, resp: HttpServletResponse) {
         val token = req.getParameter(AUTHORIZE_TOKEN)
         if (token == null) {
-            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_NOT_SPECIFIED) }.toString())
+            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_NOT_SPECIFIED) }.toString())
+            responseSingle(resp, RESPONSE_TOKEN_NOT_SPECIFIED)
             return
         }
         
         File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
             if (!exists()) {
                 JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString()
-                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
+                // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
+                responseSingle(resp, RESPONSE_INTERNAL_ERROR)
                 return
             }
             
             val sha256 = readText()
             if (sha256.isEmpty()) {
-                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
+                // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
+                responseSingle(resp, RESPONSE_INTERNAL_ERROR)
                 return
             }
             
             if (token == sha256) {
-                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_AUTHORIZATION_SUCCESS) }.toString())
+                resp.outputStream.writeAndClose(JsonObject().apply {
+                    addProperty(
+                        RESPONSE_HEAD,
+                        RESPONSE_AUTHORIZATION_SUCCESS
+                    )
+                }.toString())
                 return
             }
             
-            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TOKEN) }.toString())
+            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TOKEN) }.toString())
+            responseSingle(resp, RESPONSE_UNKNOWN_TOKEN)
         }
     }
     
     /**
-     * [unknown]
+     * [content]
      * @param resp [HttpServletResponse]
      **/
-    private fun unknown(resp: HttpServletResponse) {
-        resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TYPE) }.toString())
-    }
+    private fun responseSingle(resp: HttpServletResponse, content: String = RESPONSE_UNKNOWN_TYPE) =
+        tryCatch {
+            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, content) }.toString())
+        }
     
     /**
      * [checkAcPw]
@@ -198,7 +208,8 @@ class Authorization: HttpServlet() {
             return result
         }
         
-        return StringBuilder().apply { repeat((0 until 32 - result.length).count()) { append('0') } }.toString() + result
+        return StringBuilder().apply { repeat((0 until 32 - result.length).count()) { append('0') } }
+            .toString() + result
     }
     
 }
