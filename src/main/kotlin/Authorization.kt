@@ -165,11 +165,7 @@ class Authorization: HttpServlet() {
             return result
         }
         
-        return StringBuilder().apply {
-            for (i in 0 until 32 - result.length) {
-                append('0')
-            }
-        }.toString() + result
+        return StringBuilder().apply { (0 until 32 - result.length).forEach { append('0') } }.toString() + result
     }
     
 }
