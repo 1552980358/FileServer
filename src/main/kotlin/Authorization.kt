@@ -1,3 +1,4 @@
+import com.google.gson.JsonObject
 import lib.github1552980358.ktExtension.jvm.io.writeAndClose
 import lib.github1552980358.ktExtension.jvm.keyword.tryCatch
 import java.io.BufferedOutputStream
@@ -94,14 +95,17 @@ class Authorization: HttpServlet() {
         val pw = req.getParameter(LOGIN_PW)
         
         if (ac == null || pw == null) {
-            tryCatch { resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_ID_PW_NOT_SPECIFIED\"}") }
+            
+            tryCatch {
+                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_ID_PW_NOT_SPECIFIED) }.toString())
+            }
             return
         }
         
         val dir = File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
         dir.apply {
             if (!exists()) {
-                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_INTERNAL_ERROR\"}")
+                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
                 return
             }
             readLines().apply {
@@ -117,7 +121,10 @@ class Authorization: HttpServlet() {
         val sha256 = getSHA256(dir.readBytes())
         tryCatch {
             resp.outputStream.writeAndClose(
-                "{\"$RESPONSE_HEAD\"=\"$RESPONSE_LOGIN_SUCCESS\",\"$RESPONSE_LOGIN_SUCCESS_TOKEN\"$sha256}"
+                JsonObject().apply {
+                    addProperty(RESPONSE_HEAD, RESPONSE_LOGIN_SUCCESS)
+                    addProperty(RESPONSE_LOGIN_SUCCESS_TOKEN, sha256)
+                }.toString()
             )
         }
         File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
@@ -137,28 +144,29 @@ class Authorization: HttpServlet() {
     private fun authorize(req: HttpServletRequest, resp: HttpServletResponse) {
         val token = req.getParameter(AUTHORIZE_TOKEN)
         if (token == null) {
-            resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_TOKEN_NOT_SPECIFIED\"}")
+            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_NOT_SPECIFIED) }.toString())
             return
         }
         
         File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
             if (!exists()) {
-                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_INTERNAL_ERROR\"}")
+                JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString()
+                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
                 return
             }
             
             val sha256 = readText()
             if (sha256.isEmpty()) {
-                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_INTERNAL_ERROR\"}")
+                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
                 return
             }
             
             if (token == sha256) {
-                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_AUTHORIZATION_SUCCESS\"}")
+                resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_AUTHORIZATION_SUCCESS) }.toString())
                 return
             }
-    
-            resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_UNKNOWN_TOKEN\"}")
+            
+            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TOKEN) }.toString())
         }
     }
     
@@ -167,9 +175,10 @@ class Authorization: HttpServlet() {
      * @param resp [HttpServletResponse]
      **/
     private fun unknown(resp: HttpServletResponse) {
+        
         resp.outputStream.use { os ->
             BufferedOutputStream(os).use { bos ->
-                bos.write("{\"$RESPONSE_HEAD\"=\"$RESPONSE_UNKNOWN_TYPE\"}".toByteArray())
+                bos.write(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TYPE) }.toString().toByteArray())
                 bos.flush()
             }
             os.flush()
