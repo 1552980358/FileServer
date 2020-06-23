@@ -1,13 +1,14 @@
-import com.google.gson.JsonObject
-import lib.github1552980358.ktExtension.jvm.io.writeAndClose
+import utils.BaseHttpServlet
+import utils.LINUX_FILE_SHA256
+import utils.WIN_FILE_SHA256
+import utils.isWindows
 import java.io.File
 import javax.servlet.annotation.WebServlet
-import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @WebServlet("/browser")
-class Browser: HttpServlet() {
+class Browser: BaseHttpServlet() {
     
     companion object {
         private const val REQUEST_TOKEN = "token"
@@ -17,8 +18,6 @@ class Browser: HttpServlet() {
         
         private const val FILE_LIST_NAME = "name"
         private const val FILE_LIST_DIR = "dir"
-    
-        private const val RESPONSE_HEAD = "response"
         
         private const val RESPONSE_TOKEN_UNKNOWN = "token_unknown"
         private const val RESPONSE_TOKEN_NOT_SPECIFIED = "token_not_specified"
@@ -43,26 +42,29 @@ class Browser: HttpServlet() {
         
         val token = req.getParameter(REQUEST_TOKEN)
         if (token == null) {
-            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_NOT_SPECIFIED) }.toString())
+            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_NOT_SPECIFIED) }.toString())
+            responseSingle(resp, RESPONSE_TOKEN_NOT_SPECIFIED)
             return
         }
     
         // 验证身份
         if (File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).readText() != token) {
-            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_UNKNOWN) }.toString())
+            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_UNKNOWN) }.toString())
+            responseSingle(resp, RESPONSE_TOKEN_UNKNOWN)
             return
         }
         
         val purpose = req.getParameter(REQUEST_PURPOSE)
         if (purpose == null) {
-            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_PURPOSE_NOT_SPECIFIED) }.toString())
+            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_PURPOSE_NOT_SPECIFIED) }.toString())
+            responseSingle(resp, RESPONSE_PURPOSE_NOT_SPECIFIED)
             return
         }
         
         when (purpose) {
             REQUEST_PURPOSE_GET_LIST -> getList(req, resp)
             REQUEST_PURPOSE_FILE_LIST -> getFiles(req, resp)
-            else -> unknown(resp)
+            else -> responseSingle(resp, RESPONSE_PURPOSE_NOT_SPECIFIED)
         }
         
     }
@@ -75,8 +77,6 @@ class Browser: HttpServlet() {
     
     }
     
-    private fun unknown(resp: HttpServletResponse, category: String = RESPONSE_PURPOSE_NOT_SPECIFIED) {
-        resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, category) }.toString())
-    }
+    
     
 }

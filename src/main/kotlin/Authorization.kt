@@ -1,16 +1,21 @@
 import com.google.gson.JsonObject
 import lib.github1552980358.ktExtension.jvm.io.writeAndClose
 import lib.github1552980358.ktExtension.jvm.keyword.tryCatch
+import utils.BaseHttpServlet
+import utils.LINUX_FILE_CONFIG
+import utils.LINUX_FILE_SHA256
+import utils.WIN_FILE_CONFIG
+import utils.WIN_FILE_SHA256
+import utils.isWindows
 import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
 import javax.servlet.annotation.WebServlet
-import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @WebServlet("/authorize")
-class Authorization: HttpServlet() {
+class Authorization: BaseHttpServlet() {
     
     companion object {
         
@@ -68,7 +73,7 @@ class Authorization: HttpServlet() {
         when (req.getParameter(REQUEST_TYPE)) {
             REQUEST_TYPE_AUTHORIZE -> authorize(req, resp)
             REQUEST_TYPE_LOGIN -> login(req, resp)
-            else -> responseSingle(resp)
+            else -> responseSingle(resp, RESPONSE_UNKNOWN_TYPE)
         }
         
     }
@@ -107,7 +112,14 @@ class Authorization: HttpServlet() {
         
         val sha256 = getSHA256(dir.readBytes())
         tryCatch {
-            resp.outputStream.writeAndClose(
+            // resp.outputStream.writeAndClose(
+            //     JsonObject().apply {
+            //         addProperty(RESPONSE_HEAD, RESPONSE_LOGIN_SUCCESS)
+            //         addProperty(RESPONSE_LOGIN_SUCCESS_TOKEN, sha256)
+            //     }.toString()
+            // )
+            response(
+                resp,
                 JsonObject().apply {
                     addProperty(RESPONSE_HEAD, RESPONSE_LOGIN_SUCCESS)
                     addProperty(RESPONSE_LOGIN_SUCCESS_TOKEN, sha256)
@@ -138,7 +150,6 @@ class Authorization: HttpServlet() {
         
         File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
             if (!exists()) {
-                JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString()
                 // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
                 responseSingle(resp, RESPONSE_INTERNAL_ERROR)
                 return
@@ -152,12 +163,8 @@ class Authorization: HttpServlet() {
             }
             
             if (token == sha256) {
-                resp.outputStream.writeAndClose(JsonObject().apply {
-                    addProperty(
-                        RESPONSE_HEAD,
-                        RESPONSE_AUTHORIZATION_SUCCESS
-                    )
-                }.toString())
+                // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_AUTHORIZATION_SUCCESS) }.toString())
+                responseSingle(resp, RESPONSE_AUTHORIZATION_SUCCESS)
                 return
             }
             
@@ -165,15 +172,6 @@ class Authorization: HttpServlet() {
             responseSingle(resp, RESPONSE_UNKNOWN_TOKEN)
         }
     }
-    
-    /**
-     * [content]
-     * @param resp [HttpServletResponse]
-     **/
-    private fun responseSingle(resp: HttpServletResponse, content: String = RESPONSE_UNKNOWN_TYPE) =
-        tryCatch {
-            resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, content) }.toString())
-        }
     
     /**
      * [checkAcPw]
