@@ -175,14 +175,7 @@ class Authorization: HttpServlet() {
      * @param resp [HttpServletResponse]
      **/
     private fun unknown(resp: HttpServletResponse) {
-        
-        resp.outputStream.use { os ->
-            BufferedOutputStream(os).use { bos ->
-                bos.write(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TYPE) }.toString().toByteArray())
-                bos.flush()
-            }
-            os.flush()
-        }
+        resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_UNKNOWN_TYPE) }.toString())
     }
     
     /**
