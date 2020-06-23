@@ -9,7 +9,7 @@ import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
-@WebServlet("/Authorization")
+@WebServlet("/authorize")
 class Authorization: HttpServlet() {
     
     companion object {
@@ -26,25 +26,33 @@ class Authorization: HttpServlet() {
         /** Authorization param **/
         private const val AUTHORIZE_TOKEN = "token"
         
-        /** Respond message **/
-        private const val RESPOND_HEAD = "respond"
+        /** Response message **/
+        private const val RESPONSE_HEAD = "response"
         
         /** Unknown found **/
-        private const val RESPOND_INTERNAL_ERROR = "internal_error"
-        private const val RESPOND_UNKNOWN_TYPE = "unknown_type"
-        private const val RESPOND_UNKNOWN_ID_PW = "unknown_id_pw"
-        private const val RESPOND_UNKNOWN_TOKEN = "unknown_token"
-        private const val RESPOND_ID_PW_NOT_SPECIFIED = "id_pw_not_specified"
-        private const val RESPOND_TOKEN_NOT_SPECIFIED = "token_not_specified"
+        private const val RESPONSE_INTERNAL_ERROR = "internal_error"
+        private const val RESPONSE_UNKNOWN_TYPE = "unknown_type"
+        private const val RESPONSE_UNKNOWN_ID_PW = "unknown_id_pw"
+        private const val RESPONSE_UNKNOWN_TOKEN = "unknown_token"
+        private const val RESPONSE_ID_PW_NOT_SPECIFIED = "id_pw_not_specified"
+        private const val RESPONSE_TOKEN_NOT_SPECIFIED = "token_not_specified"
     
         /** Success **/
-        private const val RESPOND_LOGIN_SUCCESS = "login_success"
-        private const val RESPOND_LOGIN_SUCCESS_TOKEN = "token"
-        private const val RESPOND_AUTHORIZATION_SUCCESS = "authorized"
+        private const val RESPONSE_LOGIN_SUCCESS = "login_success"
+        private const val RESPONSE_LOGIN_SUCCESS_TOKEN = "token"
+        private const val RESPONSE_AUTHORIZATION_SUCCESS = "authorized"
         
-        /** File path **/
-        private const val FILE_CONFIG = "/root/.fileServer/config"
-        private const val FILE_SHA256 = "/root/.fileServer/sha256"
+        /**
+         * File path
+         * Directory and files will be created with script,
+         * edit and modify the script before starting up the service
+         **/
+        /** Linux **/
+        private const val LINUX_FILE_CONFIG = "/root/.fileServer/config"
+        private const val LINUX_FILE_SHA256 = "/root/.fileServer/sha256"
+        /** Windows **/
+        private const val WIN_FILE_CONFIG = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\config"
+        private const val WIN_FILE_SHA256 = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\sha256"
     }
     
     /**
@@ -54,7 +62,7 @@ class Authorization: HttpServlet() {
      **/
     override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse?) {
         resp?.apply {
-            contentType = "text/html"
+        
         }
     }
     
@@ -86,14 +94,14 @@ class Authorization: HttpServlet() {
         val pw = req.getParameter(LOGIN_PW)
         
         if (ac == null || pw == null) {
-            tryCatch { resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_ID_PW_NOT_SPECIFIED\"}") }
+            tryCatch { resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_ID_PW_NOT_SPECIFIED\"}") }
             return
         }
         
-        val dir = File(FILE_CONFIG)
+        val dir = File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
         dir.apply {
             if (!exists()) {
-                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_INTERNAL_ERROR\"}")
+                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_INTERNAL_ERROR\"}")
                 return
             }
             readLines().apply {
@@ -109,10 +117,10 @@ class Authorization: HttpServlet() {
         val sha256 = getSHA256(dir.readBytes())
         tryCatch {
             resp.outputStream.writeAndClose(
-                "{\"$RESPOND_HEAD\"=\"$RESPOND_LOGIN_SUCCESS\",\"$RESPOND_LOGIN_SUCCESS_TOKEN\"$sha256}"
+                "{\"$RESPONSE_HEAD\"=\"$RESPONSE_LOGIN_SUCCESS\",\"$RESPONSE_LOGIN_SUCCESS_TOKEN\"$sha256}"
             )
         }
-        File(FILE_SHA256).apply {
+        File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
             if (exists()) {
                 tryCatch { delete() }
             }
@@ -129,28 +137,28 @@ class Authorization: HttpServlet() {
     private fun authorize(req: HttpServletRequest, resp: HttpServletResponse) {
         val token = req.getParameter(AUTHORIZE_TOKEN)
         if (token == null) {
-            resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_TOKEN_NOT_SPECIFIED\"}")
+            resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_TOKEN_NOT_SPECIFIED\"}")
             return
         }
         
-        File(FILE_SHA256).apply {
+        File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
             if (!exists()) {
-                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_INTERNAL_ERROR\"}")
+                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_INTERNAL_ERROR\"}")
                 return
             }
             
             val sha256 = readText()
             if (sha256.isEmpty()) {
-                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_INTERNAL_ERROR\"}")
+                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_INTERNAL_ERROR\"}")
                 return
             }
             
             if (token == sha256) {
-                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_AUTHORIZATION_SUCCESS\"}")
+                resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_AUTHORIZATION_SUCCESS\"}")
                 return
             }
     
-            resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_UNKNOWN_TOKEN\"}")
+            resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_UNKNOWN_TOKEN\"}")
         }
     }
     
@@ -161,7 +169,7 @@ class Authorization: HttpServlet() {
     private fun unknown(resp: HttpServletResponse) {
         resp.outputStream.use { os ->
             BufferedOutputStream(os).use { bos ->
-                bos.write("{\"$RESPOND_HEAD\"=\"$RESPOND_UNKNOWN_TYPE\"}".toByteArray())
+                bos.write("{\"$RESPONSE_HEAD\"=\"$RESPONSE_UNKNOWN_TYPE\"}".toByteArray())
                 bos.flush()
             }
             os.flush()
@@ -180,7 +188,7 @@ class Authorization: HttpServlet() {
             return true
         }
         
-        resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_UNKNOWN_ID_PW\"}")
+        resp.outputStream.writeAndClose("{\"$RESPONSE_HEAD\"=\"$RESPONSE_UNKNOWN_ID_PW\"}")
         return false
     }
     
@@ -201,7 +209,7 @@ class Authorization: HttpServlet() {
             return result
         }
         
-        return StringBuilder().apply { (0 until 32 - result.length).forEach { append('0') } }.toString() + result
+        return StringBuilder().apply { repeat((0 until 32 - result.length).count()) { append('0') } }.toString() + result
     }
     
 }
