@@ -47,12 +47,22 @@ class Authorization: HttpServlet() {
         private const val FILE_SHA256 = "/root/.fileServer/sha256"
     }
     
+    /**
+     * [doGet]
+     * @param req [HttpServletRequest]
+     * @param resp [HttpServletResponse]
+     **/
     override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse?) {
         resp?.apply {
             contentType = "text/html"
         }
     }
     
+    /**
+     * [doPost]
+     * @param req [HttpServletRequest]
+     * @param resp [HttpServletResponse]
+     **/
     override fun doPost(req: HttpServletRequest?, resp: HttpServletResponse?) {
         req ?: return
         resp ?: return
@@ -66,6 +76,11 @@ class Authorization: HttpServlet() {
         
     }
     
+    /**
+     * [login]
+     * @param req [HttpServletRequest]
+     * @param resp [HttpServletResponse]
+     **/
     private fun login(req: HttpServletRequest, resp: HttpServletResponse) {
         val ac = req.getParameter(LOGIN_AC)
         val pw = req.getParameter(LOGIN_PW)
@@ -106,6 +121,11 @@ class Authorization: HttpServlet() {
         }
     }
     
+    /**
+     * [authorize]
+     * @param req [HttpServletRequest]
+     * @param resp [HttpServletResponse]
+     **/
     private fun authorize(req: HttpServletRequest, resp: HttpServletResponse) {
         val token = req.getParameter(AUTHORIZE_TOKEN)
         if (token == null) {
@@ -134,6 +154,10 @@ class Authorization: HttpServlet() {
         }
     }
     
+    /**
+     * [unknown]
+     * @param resp [HttpServletResponse]
+     **/
     private fun unknown(resp: HttpServletResponse) {
         resp.outputStream.use { os ->
             BufferedOutputStream(os).use { bos ->
@@ -144,6 +168,13 @@ class Authorization: HttpServlet() {
         }
     }
     
+    /**
+     * [checkAcPw]
+     * @param in [String]
+     * @param local [String]
+     * @param resp [HttpServletResponse]
+     * @return [Boolean]
+     **/
     private fun checkAcPw(`in`: String, local: String, resp: HttpServletResponse): Boolean {
         if (local.substring(local.indexOf('=') + 1) == `in`) {
             return true
@@ -153,6 +184,11 @@ class Authorization: HttpServlet() {
         return false
     }
     
+    /**
+     * [getSHA256]
+     * @param byteArray [ByteArray]
+     * @return [String]
+     **/
     private fun getSHA256(byteArray: ByteArray): String {
         if (byteArray.isEmpty()) {
             // 返回32个0
