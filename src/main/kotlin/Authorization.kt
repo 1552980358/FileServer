@@ -30,11 +30,13 @@ class Authorization: HttpServlet() {
         private const val RESPOND_HEAD = "respond"
         
         /** Unknown found **/
+        private const val RESPOND_INTERNAL_ERROR = "internal_error"
         private const val RESPOND_UNKNOWN_TYPE = "unknown_type"
         private const val RESPOND_UNKNOWN_ID_PW = "unknown_id_pw"
-        private const val RESPOND_ID_PW_NOT_SPECIFIED = "id_pw_not_specified"
         private const val RESPOND_UNKNOWN_TOKEN = "unknown_token"
-        
+        private const val RESPOND_ID_PW_NOT_SPECIFIED = "id_pw_not_specified"
+        private const val RESPOND_TOKEN_NOT_SPECIFIED = "token_not_specified"
+    
         /** Success **/
         private const val RESPOND_LOGIN_SUCCESS = "login_success"
         private const val RESPOND_LOGIN_SUCCESS_TOKEN = "token"
@@ -54,13 +56,11 @@ class Authorization: HttpServlet() {
     override fun doPost(req: HttpServletRequest?, resp: HttpServletResponse?) {
         req ?: return
         resp ?: return
-        
+    
+        resp.contentType = "application/json"
         when (req.getParameter(REQUEST_TYPE)) {
-            REQUEST_TYPE_AUTHORIZE -> {
-        
-            }
+            REQUEST_TYPE_AUTHORIZE -> authorize(req, resp)
             REQUEST_TYPE_LOGIN -> login(req, resp)
-            
             else -> tryCatch { unknown(resp) }
         }
         
@@ -75,14 +75,19 @@ class Authorization: HttpServlet() {
             return
         }
         
-        resp.contentType = "application/json"
         val dir = File(FILE_CONFIG)
-        dir.readLines().apply {
-            if (size < 2) {
+        dir.apply {
+            if (!exists()) {
+                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_INTERNAL_ERROR\"}")
                 return
             }
-            if (!checkAcPw(ac, this[0], resp) || !checkAcPw(pw, this[1], resp)) {
-                return
+            readLines().apply {
+                if (size < 2) {
+                    return
+                }
+                if (!checkAcPw(ac, this[0], resp) || !checkAcPw(pw, this[1], resp)) {
+                    return
+                }
             }
         }
         
@@ -102,7 +107,31 @@ class Authorization: HttpServlet() {
     }
     
     private fun authorize(req: HttpServletRequest, resp: HttpServletResponse) {
+        val token = req.getParameter(AUTHORIZE_TOKEN)
+        if (token == null) {
+            resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_TOKEN_NOT_SPECIFIED\"}")
+            return
+        }
+        
+        File(FILE_SHA256).apply {
+            if (!exists()) {
+                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_INTERNAL_ERROR\"}")
+                return
+            }
+            
+            val sha256 = readText()
+            if (sha256.isEmpty()) {
+                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_INTERNAL_ERROR\"}")
+                return
+            }
+            
+            if (token == sha256) {
+                resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_AUTHORIZATION_SUCCESS\"}")
+                return
+            }
     
+            resp.outputStream.writeAndClose("{\"$RESPOND_HEAD\"=\"$RESPOND_UNKNOWN_TOKEN\"}")
+        }
     }
     
     private fun unknown(resp: HttpServletResponse) {
