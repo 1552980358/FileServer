@@ -1,4 +1,3 @@
-import java.text.SimpleDateFormat
 import javax.servlet.annotation.WebServlet
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletRequest
@@ -15,9 +14,26 @@ import javax.servlet.http.HttpServletResponse
 @WebServlet("/")
 class Index: HttpServlet() {
     override fun doGet(req: HttpServletRequest?, resp: HttpServletResponse?) {
-        resp?.apply {
+        req?:return
+        resp?:return
+        
+        resp.apply {
             contentType = "text/html"
-            writer.write(SimpleDateFormat("yyyy-MM-dd hh:mm:ss").format(System.currentTimeMillis()))
+            characterEncoding = "UTF-8"
+            writer.write(
+                "<html>" +
+                    "<head>" +
+                    "<title>" +
+                    "系统检测" +
+                    "</title>" +
+                    "<body>" +
+                    "<p>服务器系统: ${System.getProperty("os.name")}</p>" +
+                    "<p>客户IP: ${req.getHeader("x-forwarded-for")?:req.remoteAddr}</p>" +
+                    "<p>User-Agent: ${req.getHeader("user-agent")}</p>" +
+                    "</body>" +
+                    "</html>"
+            )
+            
         }
     }
 }
