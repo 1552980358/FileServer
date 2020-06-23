@@ -4,6 +4,7 @@ import lib.github1552980358.ktExtension.jvm.keyword.tryCatch
 import utils.BaseHttpServlet
 import utils.LINUX_FILE_CONFIG
 import utils.LINUX_FILE_SHA256
+import utils.RESPONSE_INTERNAL_ERROR
 import utils.WIN_FILE_CONFIG
 import utils.WIN_FILE_SHA256
 import utils.isWindows
@@ -35,7 +36,6 @@ class Authorization: BaseHttpServlet() {
         private const val RESPONSE_HEAD = "response"
         
         /** Unknown found **/
-        private const val RESPONSE_INTERNAL_ERROR = "internal_error"
         private const val RESPONSE_UNKNOWN_TYPE = "unknown_type"
         private const val RESPONSE_UNKNOWN_ID_PW = "unknown_id_pw"
         private const val RESPONSE_UNKNOWN_TOKEN = "unknown_token"
