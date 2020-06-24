@@ -1,30 +1,21 @@
 import com.google.gson.JsonArray
 import com.google.gson.JsonObject
-import utils.BaseHttpServlet
-import utils.LINUX_FILE_LIST
-import utils.LINUX_FILE_SHA256
-import utils.RESPONSE_INTERNAL_ERROR
-import utils.WIN_FILE_LIST
-import utils.WIN_FILE_SHA256
-import utils.isWindows
+import utils.AuthorizeHttpServlet
 import java.io.File
 import javax.servlet.annotation.WebServlet
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
 @WebServlet("/browser")
-class Browser: BaseHttpServlet() {
+class Browser: AuthorizeHttpServlet() {
     
     companion object {
         /** Request head **/
-        private const val REQUEST_TOKEN = "token"
         private const val REQUEST_PURPOSE = "purpose"
         private const val REQUEST_PURPOSE_GET_LIST = "list"
         private const val REQUEST_PURPOSE_FILE_LIST = "files"
         
         /** Error found **/
-        private const val RESPONSE_TOKEN_UNKNOWN = "token_unknown"
-        private const val RESPONSE_TOKEN_NOT_SPECIFIED = "token_not_specified"
         private const val RESPONSE_PURPOSE_NOT_SPECIFIED = "purpose_not_specified"
         private const val RESPONSE_LIST_NAME_NOT_FOUND = "list_name_not_found"
         private const val RESPONSE_LIST_NAME_NOT_SPECIFIED = "list_name_not_specified"
@@ -69,17 +60,7 @@ class Browser: BaseHttpServlet() {
         resp ?: return
         
         resp.contentType = "application/json"
-        val token = req.getParameter(REQUEST_TOKEN)
-        if (token == null) {
-            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_NOT_SPECIFIED) }.toString())
-            responseSingle(resp, RESPONSE_TOKEN_NOT_SPECIFIED)
-            return
-        }
-        
-        // 验证身份
-        if (File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).readText() != token) {
-            // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_UNKNOWN) }.toString())
-            responseSingle(resp, RESPONSE_TOKEN_UNKNOWN)
+        if (!authorize(req, resp)) {
             return
         }
         
