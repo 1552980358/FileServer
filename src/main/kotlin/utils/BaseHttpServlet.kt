@@ -3,6 +3,7 @@ package utils
 import com.google.gson.JsonObject
 import lib.github1552980358.ktExtension.jvm.io.writeAndClose
 import lib.github1552980358.ktExtension.jvm.keyword.tryCatch
+import java.io.File
 import javax.servlet.http.HttpServlet
 import javax.servlet.http.HttpServletResponse
 
@@ -42,7 +43,25 @@ open class BaseHttpServlet: HttpServlet() {
      * [isWindows]
      * @return [Boolean]
      **/
-    fun isWindows() = System.getProperty("os.name").toLowerCase().startsWith("win")
+    private fun isWindows() = System.getProperty("os.name").toLowerCase().startsWith("win")
+    
+    /**
+     * [getSHA256File]
+     * @return [File]
+     **/
+    fun getSHA256File() = File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256)
+    
+    /**
+     * [getConfigFile]
+     * @return [File]
+     **/
+    fun getConfigFile() = File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
+    
+    /**
+     * [getConfigFile]
+     * @return [File]
+     **/
+    fun getListFile() = File(if (isWindows()) WIN_FILE_LIST else LINUX_FILE_LIST)
     
     /**
      * [responseSingle]

@@ -1,6 +1,5 @@
 package utils
 
-import java.io.File
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -33,7 +32,7 @@ open class AuthorizeHttpServlet: BaseHttpServlet() {
         }
     
         // 验证身份
-        if (File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).readText() != token) {
+        if (getSHA256File().readText() != token) {
             // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_UNKNOWN) }.toString())
             responseSingle(resp, RESPONSE_TOKEN_UNKNOWN)
             return false

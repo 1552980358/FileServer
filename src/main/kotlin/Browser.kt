@@ -85,7 +85,7 @@ class Browser: AuthorizeHttpServlet() {
      **/
     private fun getList(resp: HttpServletResponse) {
         val jsonObject: JsonObject
-        File(if (isWindows()) WIN_FILE_LIST else LINUX_FILE_LIST).apply {
+        getListFile().apply {
             if (!exists()) {
                 responseSingle(resp, RESPONSE_INTERNAL_ERROR)
                 return
@@ -135,8 +135,8 @@ class Browser: AuthorizeHttpServlet() {
             responseSingle(resp, RESPONSE_LIST_NAME_NOT_SPECIFIED)
             return
         }
-        
-        File(if (isWindows()) WIN_FILE_LIST else LINUX_FILE_LIST).apply {
+    
+        getListFile().apply {
             if (!exists()) {
                 responseSingle(resp, RESPONSE_INTERNAL_ERROR)
                 return

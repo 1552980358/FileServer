@@ -2,7 +2,6 @@ import com.google.gson.JsonObject
 import lib.github1552980358.ktExtension.jvm.io.writeAndClose
 import lib.github1552980358.ktExtension.jvm.keyword.tryCatch
 import utils.BaseHttpServlet
-import java.io.File
 import java.math.BigInteger
 import java.security.MessageDigest
 import javax.servlet.annotation.WebServlet
@@ -87,7 +86,7 @@ class Authorization: BaseHttpServlet() {
             return
         }
         
-        val dir = File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
+        val dir = getConfigFile()
         dir.apply {
             if (!exists()) {
                 // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
@@ -120,7 +119,7 @@ class Authorization: BaseHttpServlet() {
                 }.toString()
             )
         }
-        File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
+        getSHA256File().apply {
             if (exists()) {
                 tryCatch { delete() }
             }
@@ -141,8 +140,8 @@ class Authorization: BaseHttpServlet() {
             responseSingle(resp, RESPONSE_TOKEN_NOT_SPECIFIED)
             return
         }
-        
-        File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256).apply {
+    
+        getSHA256File().apply {
             if (!exists()) {
                 // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
                 responseSingle(resp, RESPONSE_INTERNAL_ERROR)
