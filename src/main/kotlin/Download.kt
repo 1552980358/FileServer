@@ -23,7 +23,7 @@ class Download: AuthorizeHttpServlet() {
     }
     
     /**
-     * [doPost]
+     * [doGet]
      * @param req [HttpServletRequest]
      * @param resp [HttpServletResponse]
      **/
@@ -106,6 +106,7 @@ class Download: AuthorizeHttpServlet() {
                     }
                     
                     resp.setHeader("Content-Disposition", "attachment; filename=$name")
+                    resp.contentType = RESPONSE_TYPE_BINARY
                     inputStream().use { `is` ->
                         resp.outputStream.use { os ->
                             var len = 0

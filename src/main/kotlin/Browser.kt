@@ -59,7 +59,6 @@ class Browser: AuthorizeHttpServlet() {
         req ?: return
         resp ?: return
         
-        resp.contentType = "application/json"
         if (!authorize(req, resp)) {
             return
         }

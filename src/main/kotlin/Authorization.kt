@@ -62,7 +62,6 @@ class Authorization: BaseHttpServlet() {
         req ?: return
         resp ?: return
         
-        resp.contentType = "application/json"
         when (req.getParameter(REQUEST_TYPE)) {
             REQUEST_TYPE_AUTHORIZE -> authorize(req, resp)
             REQUEST_TYPE_LOGIN -> login(req, resp)

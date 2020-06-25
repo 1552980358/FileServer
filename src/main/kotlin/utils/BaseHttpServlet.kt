@@ -38,7 +38,7 @@ open class BaseHttpServlet: HttpServlet() {
         const val WIN_FILE_LIST = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\list"
         
         const val RESPONSE_TYPE_JSON = "application/json"
-        const val RESPONSE_TYPE_BINARY = ""
+        const val RESPONSE_TYPE_BINARY = "application/octet-stream"
         
     }
     
@@ -72,7 +72,7 @@ open class BaseHttpServlet: HttpServlet() {
      * @param content [String]
      **/
     fun responseSingle(resp: HttpServletResponse, content: String) = tryCatch {
-        resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, content) }.toString())
+        response(resp, JsonObject().apply { addProperty(RESPONSE_HEAD, content) }.toString())
     }
     
     /**
@@ -81,6 +81,7 @@ open class BaseHttpServlet: HttpServlet() {
      * @param content [String]
      **/
     fun response(resp: HttpServletResponse, content: String) = tryCatch {
+        resp.contentType = RESPONSE_TYPE_JSON
         resp.outputStream.writeAndClose(content)
     }
     
