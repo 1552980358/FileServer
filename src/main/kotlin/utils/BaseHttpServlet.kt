@@ -37,6 +37,9 @@ open class BaseHttpServlet: HttpServlet() {
         const val WIN_FILE_SHA256 = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\sha256"
         const val WIN_FILE_LIST = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\list"
         
+        const val RESPONSE_TYPE_JSON = "application/json"
+        const val RESPONSE_TYPE_BINARY = ""
+        
     }
     
     /**

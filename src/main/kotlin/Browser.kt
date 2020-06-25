@@ -169,7 +169,6 @@ class Browser: AuthorizeHttpServlet() {
                     }
                 }
                 
-                
                 val file = File(
                     "${i.substring(index + 1)}${if (dir.startsWith(File.separatorChar)) dir else "${File.separatorChar}$dir"}"
                 )
