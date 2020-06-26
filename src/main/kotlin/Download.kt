@@ -106,6 +106,7 @@ class Download: AuthorizeHttpServlet() {
                     }
                     
                     resp.setHeader("Content-Disposition", "attachment; filename=$name")
+                    resp.setContentLengthLong(length())
                     resp.contentType = RESPONSE_TYPE_BINARY
                     inputStream().use { `is` ->
                         resp.outputStream.use { os ->
