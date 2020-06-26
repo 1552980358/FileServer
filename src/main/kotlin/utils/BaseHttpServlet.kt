@@ -29,13 +29,37 @@ open class BaseHttpServlet: HttpServlet() {
          * edit and modify the script before starting up the service
          **/
         /** Linux **/
+        /** @hide **/
+        @Suppress("unused")
+        @Deprecated("Use FILE_CONFIG", ReplaceWith("FILE_CONFIG"), DeprecationLevel.ERROR)
         const val LINUX_FILE_CONFIG = "/root/.fileServer/config"
+        /** @hide **/
+        @Suppress("unused")
+        @Deprecated("Use FILE_TOKEN", ReplaceWith("FILE_TOKEN"), DeprecationLevel.ERROR)
         const val LINUX_FILE_SHA256 = "/root/.fileServer/sha256"
+        /** @hide **/
+        @Suppress("unused")
+        @Deprecated("Use FILE_LIST", ReplaceWith("FILE_LIST"), DeprecationLevel.ERROR)
         const val LINUX_FILE_LIST = "/root/.fileServer/list"
         /** Windows **/
+        /** @hide **/
+        @Suppress("unused")
+        @Deprecated("Use FILE_CONFIG", ReplaceWith("FILE_CONFIG"), DeprecationLevel.ERROR)
         const val WIN_FILE_CONFIG = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\config"
+        /** @hide **/
+        @Suppress("unused")
+        @Deprecated("Use FILE_TOKEN", ReplaceWith("FILE_TOKEN"), DeprecationLevel.ERROR)
         const val WIN_FILE_SHA256 = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\sha256"
+        /** @hide **/
+        @Suppress("unused")
+        @Deprecated("Use FILE_LIST", ReplaceWith("FILE_LIST"), DeprecationLevel.ERROR)
         const val WIN_FILE_LIST = "C:\\Program Files\\Tomcat\\webapps\\ROOT\\saves\\list"
+        
+        /** Relative path **/
+        private const val FILE_DIR = "save"
+        val FILE_CONFIG = "${File.separatorChar}${FILE_DIR}${File.separatorChar}config"
+        val FILE_TOKEN = "${File.separatorChar}${FILE_DIR}${File.separatorChar}token"
+        val FILE_LIST = "${File.separatorChar}${FILE_DIR}${File.separatorChar}list"
         
         const val RESPONSE_TYPE_JSON = "application/json"
         const val RESPONSE_TYPE_BINARY = "application/octet-stream"
@@ -46,25 +70,26 @@ open class BaseHttpServlet: HttpServlet() {
      * [isWindows]
      * @return [Boolean]
      **/
+    @Deprecated("No longer use", ReplaceWith("NONE"),level = DeprecationLevel.ERROR)
     private fun isWindows() = System.getProperty("os.name").toLowerCase().startsWith("win")
     
     /**
-     * [getSHA256File]
+     * [getTokenFile]
      * @return [File]
      **/
-    fun getSHA256File() = File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256)
+    fun getTokenFile() = File(servletContext.getRealPath(FILE_TOKEN)) // File(if (isWindows()) WIN_FILE_SHA256 else LINUX_FILE_SHA256)
     
     /**
      * [getConfigFile]
      * @return [File]
      **/
-    fun getConfigFile() = File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
+    fun getConfigFile() = File(servletContext.getRealPath(FILE_CONFIG)) // File(if (isWindows()) WIN_FILE_CONFIG else LINUX_FILE_CONFIG)
     
     /**
      * [getConfigFile]
      * @return [File]
      **/
-    fun getListFile() = File(if (isWindows()) WIN_FILE_LIST else LINUX_FILE_LIST)
+    fun getListFile() = File(servletContext.getRealPath(FILE_LIST)) //File(if (isWindows()) WIN_FILE_LIST else LINUX_FILE_LIST)
     
     /**
      * [responseSingle]

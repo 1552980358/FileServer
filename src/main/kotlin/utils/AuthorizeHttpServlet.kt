@@ -32,7 +32,7 @@ open class AuthorizeHttpServlet: BaseHttpServlet() {
         }
     
         // 验证身份
-        if (getSHA256File().readText() != token) {
+        if (getTokenFile().readText() != token) {
             // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_TOKEN_UNKNOWN) }.toString())
             responseSingle(resp, RESPONSE_TOKEN_UNKNOWN)
             return false

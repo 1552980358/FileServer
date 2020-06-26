@@ -118,7 +118,7 @@ class Authorization: BaseHttpServlet() {
                 }.toString()
             )
         }
-        getSHA256File().apply {
+        getTokenFile().apply {
             if (exists()) {
                 tryCatch { delete() }
             }
@@ -140,7 +140,7 @@ class Authorization: BaseHttpServlet() {
             return
         }
     
-        getSHA256File().apply {
+        getTokenFile().apply {
             if (!exists()) {
                 // resp.outputStream.writeAndClose(JsonObject().apply { addProperty(RESPONSE_HEAD, RESPONSE_INTERNAL_ERROR) }.toString())
                 responseSingle(resp, RESPONSE_INTERNAL_ERROR)
