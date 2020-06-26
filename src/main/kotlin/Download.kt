@@ -124,6 +124,7 @@ class Download: AuthorizeHttpServlet() {
                 return
             }
             
+            responseSingle(resp, RESPONSE_NAME_NOT_FOUND)
         }
         
     }

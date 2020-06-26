@@ -20,6 +20,8 @@ open class AuthorizeHttpServlet: BaseHttpServlet() {
         const val RESPONSE_TOKEN_UNKNOWN = "token_unknown"
         
         const val RESPONSE_TOKEN_NOT_SPECIFIED = "token_not_specified"
+    
+        const val RESPONSE_NAME_NOT_FOUND = "name_not_found"
         
     }
     
