@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse
 class Download: AuthorizeHttpServlet() {
     
     companion object {
-    
+        
         /** Request header **/
         private const val REQUEST_NAME = "name"
         private const val REQUEST_PATH = "path"
@@ -57,11 +57,15 @@ class Download: AuthorizeHttpServlet() {
             return
         }
         
-        if (path.contains('\\')) {
-            path = path.replace('\\', File.separatorChar)
-        } else if (path.contains('/')) {
-            path = path.replace('/', File.separatorChar)
-        }
+        /**
+         * if (path.contains('\\')) {
+         *     path = path.replace('\\', File.separatorChar)
+         * } else if (path.contains('/')) {
+         *     path = path.replace('/', File.separatorChar)
+         * }
+         **/
+        /** To convert all dividers into [File.separatorChar] **/
+        path = path.replace('\\', '/').replace('/', File.separatorChar)
         
         getListFile().apply {
             if (!exists()) {
@@ -87,15 +91,21 @@ class Download: AuthorizeHttpServlet() {
                 }
                 
                 var listPath = line.substring(`=` + 1)
-                if (listPath.contains('/')) {
-                    listPath = listPath.replace('/', File.separatorChar)
-                } else if (listPath.contains('\\')) {
-                    listPath = listPath.replace('\\', File.separatorChar)
-                }
-                
+                /**
+                 * if (listPath.contains('/')) {
+                 *     listPath = listPath.replace('/', File.separatorChar)
+                 * } else if (listPath.contains('\\')) {
+                 *     listPath = listPath.replace('\\', File.separatorChar)
+                 * }
+                 **/
+                /** To convert all dividers into [File.separatorChar] **/
+                listPath = listPath.replace('\\', '/').replace('/', File.separatorChar)
+    
                 val fullPath = when {
-                    listPath.endsWith(File.separatorChar) && path.startsWith(File.separatorChar) -> listPath + path.substring(1)
-                    listPath.endsWith(File.separatorChar) || path.startsWith(File.separatorChar) -> listPath + path
+                    listPath.endsWith(File.separatorChar) && path.startsWith(File.separatorChar) ->
+                        listPath + path.substring(1)
+                    listPath.endsWith(File.separatorChar) || path.startsWith(File.separatorChar) ->
+                        listPath + path
                     else -> listPath + File.separator + path
                 }
                 

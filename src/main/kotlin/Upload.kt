@@ -81,11 +81,15 @@ class Upload: AuthorizeHttpServlet() {
             responseSingle(resp, RESPONSE_PATH_NOT_PROVIDED)
             return
         }
-        
-        when {
-            path.contains('/') -> path = path.replace('/', File.separatorChar)
-            path.contains('\\') -> path = path.replace('\\', File.separatorChar)
-        }
+    
+        /**
+         * when {
+         *     path.contains('/') -> path = path.replace('/', File.separatorChar)
+         *     path.contains('\\') -> path = path.replace('\\', File.separatorChar)
+         * }
+         */
+        /** To convert all dividers into [File.separatorChar] **/
+        path = path.replace('\\', '/').replace('/', File.separatorChar)
         
         getListFile().apply {
             if (!exists()) {
@@ -109,11 +113,15 @@ class Upload: AuthorizeHttpServlet() {
             return
         }
         
-        when {
-            name.contains('/') -> name = name.replace('/', File.separatorChar)
-            name.contains('\\') -> name = name.replace('\\', File.separatorChar)
-        }
-        
+        /**
+         * when {
+         *     name.contains('/') -> name = name.replace('/', File.separatorChar)
+         *     name.contains('\\') -> name = name.replace('\\', File.separatorChar)
+         * }
+         **/
+        /** To convert all dividers into [File.separatorChar] **/
+        name = name.replace('\\', '/').replace('/', File.separatorChar)
+    
         File(
             when {
                 name.endsWith(File.separatorChar) && path.startsWith(File.separatorChar) -> name + path.substring(1)
