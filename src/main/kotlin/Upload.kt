@@ -89,7 +89,7 @@ class Upload: AuthorizeHttpServlet() {
          * }
          */
         /** To convert all dividers into [File.separatorChar] **/
-        path = path.replace('\\', '/').replace('/', File.separatorChar)
+        path = getConvertDividers(path) // path.replace('\\', '/').replace('/', File.separatorChar)
         
         getListFile().apply {
             if (!exists()) {
@@ -120,7 +120,7 @@ class Upload: AuthorizeHttpServlet() {
          * }
          **/
         /** To convert all dividers into [File.separatorChar] **/
-        name = name.replace('\\', '/').replace('/', File.separatorChar)
+        name = getConvertDividers(name) // name.replace('\\', '/').replace('/', File.separatorChar)
     
         File(
             when {

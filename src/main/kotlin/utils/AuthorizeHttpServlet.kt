@@ -1,5 +1,6 @@
 package utils
 
+import java.io.File
 import javax.servlet.http.HttpServletRequest
 import javax.servlet.http.HttpServletResponse
 
@@ -25,6 +26,12 @@ open class AuthorizeHttpServlet: BaseHttpServlet() {
         
     }
     
+    /**
+     * [authorize]
+     * @param req [HttpServletRequest]
+     * @param resp [HttpServletResponse]
+     * @return [Boolean]
+     **/
     fun authorize(req: HttpServletRequest, resp: HttpServletResponse): Boolean {
         val token = req.getParameter(REQUEST_TOKEN)
         if (token == null) {
@@ -42,5 +49,12 @@ open class AuthorizeHttpServlet: BaseHttpServlet() {
         
         return true
     }
+    
+    /**
+     * [getConvertDividers]
+     * @param string [String]
+     * @return [String]
+     **/
+    fun getConvertDividers(string: String) = string.replace('\\', '/').replace('/', File.separatorChar)
     
 }

@@ -65,7 +65,7 @@ class Download: AuthorizeHttpServlet() {
          * }
          **/
         /** To convert all dividers into [File.separatorChar] **/
-        path = path.replace('\\', '/').replace('/', File.separatorChar)
+        path = getConvertDividers(path) // path.replace('\\', '/').replace('/', File.separatorChar)
         
         getListFile().apply {
             if (!exists()) {
@@ -90,7 +90,7 @@ class Download: AuthorizeHttpServlet() {
                     continue
                 }
                 
-                var listPath = line.substring(`=` + 1)
+                val listPath = getConvertDividers(line.substring(`=` + 1))
                 /**
                  * if (listPath.contains('/')) {
                  *     listPath = listPath.replace('/', File.separatorChar)
@@ -99,7 +99,7 @@ class Download: AuthorizeHttpServlet() {
                  * }
                  **/
                 /** To convert all dividers into [File.separatorChar] **/
-                listPath = listPath.replace('\\', '/').replace('/', File.separatorChar)
+                // listPath = listPath.replace('\\', '/').replace('/', File.separatorChar)
     
                 val fullPath = when {
                     listPath.endsWith(File.separatorChar) && path.startsWith(File.separatorChar) ->
